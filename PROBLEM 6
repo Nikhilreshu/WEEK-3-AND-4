@@ -1,0 +1,58 @@
+import java.util.*;
+
+public class RiskThresholdLookup {
+
+    // Linear Search: check if exact threshold exists
+    public static void linearSearch(int[] risks, int threshold) {
+        int comparisons = 0;
+        boolean found = false;
+        for (int r : risks) {
+            comparisons++;
+            if (r == threshold) {
+                found = true;
+                break;
+            }
+        }
+        if (found) System.out.println("Linear: threshold=" + threshold + " → found (" + comparisons + " comparisons)");
+        else System.out.println("Linear: threshold=" + threshold + " → not found (" + comparisons + " comparisons)");
+    }
+
+    // Binary Search floor (largest <= target) and ceiling (smallest >= target)
+    public static void binaryFloorCeiling(int[] risks, int target) {
+        Arrays.sort(risks); // ensure sorted
+        int comps = 0;
+
+        int low = 0, high = risks.length - 1;
+        int floor = Integer.MIN_VALUE;
+        int ceil = Integer.MAX_VALUE;
+
+        // Find floor
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            comps++;
+            if (risks[mid] == target) {
+                floor = target;
+                ceil = target;
+                break;
+            } else if (risks[mid] < target) {
+                floor = risks[mid];
+                low = mid + 1;
+            } else {
+                ceil = risks[mid];
+                high = mid - 1;
+            }
+        }
+
+        System.out.println("Binary floor(" + target + "): " + floor + ", ceiling: " + ceil + " (" + comps + " comparisons)");
+    }
+
+    public static void main(String[] args) {
+        int[] sortedRisks = {10, 25, 50, 100};
+
+        linearSearch(sortedRisks, 30);
+        binaryFloorCeiling(sortedRisks, 30);
+
+        linearSearch(sortedRisks, 50);
+        binaryFloorCeiling(sortedRisks, 50);
+    }
+}
