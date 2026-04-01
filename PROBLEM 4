@@ -1,0 +1,96 @@
+import java.util.*;
+
+class Asset {
+    String symbol;
+    double returnRate; // in percentage
+    double volatility; // e.g., standard deviation
+
+    public Asset(String symbol, double returnRate, double volatility) {
+        this.symbol = symbol;
+        this.returnRate = returnRate;
+        this.volatility = volatility;
+    }
+
+    @Override
+    public String toString() {
+        return symbol + ":" + returnRate + "%";
+    }
+}
+
+public class PortfolioReturnSorting {
+
+    // Merge Sort (ascending, stable by returnRate)
+    public static void mergeSortAssets(Asset[] assets, int left, int right) {
+        if (left >= right) return;
+        int mid = left + (right - left) / 2;
+        mergeSortAssets(assets, left, mid);
+        mergeSortAssets(assets, mid + 1, right);
+        merge(assets, left, mid, right);
+    }
+
+    private static void merge(Asset[] assets, int left, int mid, int right) {
+        Asset[] temp = new Asset[right - left + 1];
+        int i = left, j = mid + 1, k = 0;
+        while (i <= mid && j <= right) {
+            if (assets[i].returnRate <= assets[j].returnRate) temp[k++] = assets[i++];
+            else temp[k++] = assets[j++];
+        }
+        while (i <= mid) temp[k++] = assets[i++];
+        while (j <= right) temp[k++] = assets[j++];
+        System.arraycopy(temp, 0, assets, left, temp.length);
+    }
+
+    // Quick Sort (descending by returnRate, ascending volatility)
+    public static void quickSortAssets(Asset[] assets, int low, int high) {
+        if (low < high) {
+            int pi = partition(assets, low, high);
+            quickSortAssets(assets, low, pi - 1);
+            quickSortAssets(assets, pi + 1, high);
+        }
+    }
+
+    private static int partition(Asset[] assets, int low, int high) {
+        // Using median-of-three pivot
+        int mid = low + (high - low) / 2;
+        Asset pivot = medianOfThree(assets[low], assets[mid], assets[high]);
+        int i = low - 1;
+        for (int j = low; j <= high; j++) {
+            if (compareAssets(assets[j], pivot) > 0) {
+                i++;
+                Asset temp = assets[i];
+                assets[i] = assets[j];
+                assets[j] = temp;
+            }
+        }
+        return i;
+    }
+
+    // Compare for Quick Sort: returnRate DESC, volatility ASC
+    private static int compareAssets(Asset a1, Asset a2) {
+        if (a1.returnRate != a2.returnRate)
+            return Double.compare(a1.returnRate, a2.returnRate); // higher first
+        return Double.compare(a2.volatility, a1.volatility); // lower volatility first
+    }
+
+    private static Asset medianOfThree(Asset a, Asset b, Asset c) {
+        Asset[] arr = {a, b, c};
+        Arrays.sort(arr, Comparator.comparingDouble(x -> x.returnRate));
+        return arr[1]; // median
+    }
+
+    public static void main(String[] args) {
+        Asset[] assets = {
+            new Asset("AAPL", 12, 1.2),
+            new Asset("TSLA", 8, 2.5),
+            new Asset("GOOG", 15, 1.0)
+        };
+
+        Asset[] mergeAssets = Arrays.copyOf(assets, assets.length);
+        mergeSortAssets(mergeAssets, 0, mergeAssets.length - 1);
+        System.out.println("MergeSort (asc): " + Arrays.toString(mergeAssets));
+
+        Asset[] quickAssets = Arrays.copyOf(assets, assets.length);
+        quickSortAssets(quickAssets, 0, quickAssets.length - 1);
+        System.out.println("QuickSort (desc + vol): " + Arrays.toString(quickAssets));
+    }
+}
