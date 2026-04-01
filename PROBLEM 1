@@ -1,0 +1,81 @@
+import java.util.*;
+
+class Transaction {
+    String id;
+    double fee;
+    String timestamp;
+
+    public Transaction(String id, double fee, String timestamp) {
+        this.id = id;
+        this.fee = fee;
+        this.timestamp = timestamp;
+    }
+
+    @Override
+    public String toString() {
+        return id + ":" + fee + "@" + timestamp;
+    }
+}
+
+public class TransactionSorter {
+    public static void bubbleSortFees(List<Transaction> txs) {
+        int n = txs.size();
+        int passes = 0;
+        int swaps = 0;
+        for (int i = 0; i < n - 1; i++) {
+            boolean swapped = false;
+            for (int j = 0; j < n - i - 1; j++) {
+                if (txs.get(j).fee > txs.get(j + 1).fee) {
+                    Transaction temp = txs.get(j);
+                    txs.set(j, txs.get(j + 1));
+                    txs.set(j + 1, temp);
+                    swaps++;
+                    swapped = true;
+                }
+            }
+            passes++;
+            if (!swapped) break;
+        }
+        System.out.println("BubbleSort (fees): " + txs + " // " + passes + " passes, " + swaps + " swaps");
+    }
+
+    public static void insertionSortFeeTimestamp(List<Transaction> txs) {
+        int n = txs.size();
+        for (int i = 1; i < n; i++) {
+            Transaction key = txs.get(i);
+            int j = i - 1;
+            while (j >= 0 && 
+                   (txs.get(j).fee > key.fee || 
+                   (txs.get(j).fee == key.fee && txs.get(j).timestamp.compareTo(key.timestamp) > 0))) {
+                txs.set(j + 1, txs.get(j));
+                j--;
+            }
+            txs.set(j + 1, key);
+        }
+        System.out.println("InsertionSort (fee+ts): " + txs);
+    }
+
+    public static void flagHighFeeOutliers(List<Transaction> txs, double threshold) {
+        List<Transaction> highFee = new ArrayList<>();
+        for (Transaction t : txs) {
+            if (t.fee > threshold) highFee.add(t);
+        }
+        if (highFee.isEmpty()) System.out.println("High-fee outliers: none");
+        else System.out.println("High-fee outliers: " + highFee);
+    }
+
+    public static void main(String[] args) {
+        List<Transaction> transactions = new ArrayList<>();
+        transactions.add(new Transaction("id1", 10.5, "10:00"));
+        transactions.add(new Transaction("id2", 25.0, "09:30"));
+        transactions.add(new Transaction("id3", 5.0, "10:15"));
+
+        List<Transaction> smallBatch = new ArrayList<>(transactions);
+        bubbleSortFees(smallBatch);
+
+        List<Transaction> mediumBatch = new ArrayList<>(transactions);
+        insertionSortFeeTimestamp(mediumBatch);
+
+        flagHighFeeOutliers(transactions, 50.0);
+    }
+}
